@@ -5,3 +5,4 @@
 .devcontainer*
 Dockerfile
 MakeCross
+src/.config
