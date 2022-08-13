@@ -72,7 +72,7 @@ int runSequence(double seconds) {
         else {
             perror("Undefined User Program\n");
             syslog(LOG_DEBUG, "ERROR: sumoUndefUsrProg (%s,%d)", __FILE__, __LINE__);
-            EXIT_FAILURE;
+            return EXIT_FAILURE;
         }
     }
     #ifdef DEBUG
