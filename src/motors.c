@@ -35,25 +35,12 @@ void *motorCtrl(void *mtr) {
             }
         }
 
-        if (tdut != motor->dut && motor->softStart == 0) {
+        if (tdut != motor->dut) {
             tdut = motor->dut;
             if (motor->dut <= 100) {
                 gpioPWM(motor->p_mtr[PWM], motor->dut);
             }
         }
-        else {
-            if (motor->dut != motor->softStart) {
-                if (motor->dut <= 100) {
-                    if (((gpioTick() - motor->startTick) / 1000000) % 2)  {
-                        gpioPWM(motor->p_mtr[PWM], motor->softStart++);
-                    }
-                }
-            }
-            else {
-                motor->softStart = 0;
-            }
-        }
-
 
         pthread_mutex_unlock(&motor->m_mtr);
         gpioDelay(500);

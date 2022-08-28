@@ -31,14 +31,14 @@ ${NAME}:	${SOBJS}
 			${CC} ${CFLAGS} ${INC} ${SOBJS} ${LIBS} -o ${NAME}
 
 lib:
-#			${MAKE} all  -C ./pigpio
-#			cd ./bcm2835-1.71 && ./configure
-#			${MAKE} all -C ./bcm2835-1.71
+			${MAKE} all  -C ./pigpio
+			cd ./bcm2835-1.71 && ./configure
+			${MAKE} all -C ./bcm2835-1.71
 			${MAKE} all -C ./st7789v
 
 libinstall:
-#			${MAKE} install -C ./pigpio
-#			${MAKE} install -C ./bcm2835-1.71
+			${MAKE} install -C ./pigpio
+			${MAKE} install -C ./bcm2835-1.71
 			${MAKE} install -C ./st7789v
 
 uninstall:	clean
@@ -51,7 +51,7 @@ clean:
 
 fclean:		clean
 			${MAKE} clean -C ./pigpio
-#			${MAKE} clean -C ./bcm2835-1.71
+			${MAKE} clean -C ./bcm2835-1.71
 			${MAKE} fclean -C ./st7789v
 
 re:			clean all

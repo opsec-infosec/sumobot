@@ -116,7 +116,7 @@ static int allocSensors(t_sensors *sensors) {
 /**
  * Start the Edge Sensor
  **/
-static void startEdgeSensor(t_sensors *sensors) {
+static int startEdgeSensor(t_sensors *sensors) {
     int i;
 
     for (i = 0; i < EDGE; i++) {
@@ -149,12 +149,13 @@ static void startEdgeSensor(t_sensors *sensors) {
     }
     for (i = 0; i < EDGE; i++)
         pthread_mutex_unlock(&sensors->m_edge[i]);
+    return EXIT_SUCCESS;
 }
 
 /**
  * Start the Range Sensor
  **/
-static void startRangeSensors(t_sensors *sensors) {
+static int startRangeSensors(t_sensors *sensors) {
     int i;
 
     for (i = 0; i < RANGE; i++) {
@@ -187,20 +188,21 @@ static void startRangeSensors(t_sensors *sensors) {
     }
     for (i = 0; i < RANGE; i++)
         pthread_mutex_unlock(&sensors->m_range[i]);
+    return EXIT_SUCCESS;
 }
 
 /**
  * Start up all Sensors
  **/
 int startSensors(t_sensors *sensors) {
-    int i = 0;
-
     if (allocSensors(sensors)) {
         return EXIT_FAILURE;
     }
 
-    startEdgeSensor(sensors);
-    startRangeSensors(sensors);
+    if (startEdgeSensor(sensors))
+		return EXIT_FAILURE;
+    if (startRangeSensors(sensors))
+		return EXIT_FAILURE;
 
     #ifdef DEBUG
         printf("Start Sensors Finished\n");
