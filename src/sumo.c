@@ -109,6 +109,20 @@ void *prgrm(t_sensors *sensors) {
 int main(void) {
     t_sensors sensors;
     t_motor *motor = NULL;
+	t_bno055 bno055;
+
+ 	// if (gpioInitialise() < 0) {
+    //     perror("pigpio failed initialisation!\n");
+    //     syslog(LOG_DEBUG, "ERROR: gpioPWMInitialise (%s,%d)", __FILE__, __LINE__);
+    //     return EXIT_FAILURE;
+    // }
+
+	// initGyro(&bno055);
+
+	// while (1) {
+	// 	getEul(&bno055);
+	// 	gpioDelay(10);
+	// }
 
     #ifdef WDT
         initWDT();

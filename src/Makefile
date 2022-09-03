@@ -19,7 +19,7 @@ SOBJS		=	${SSRCS:.c=.o}
 
 CC			=	gcc
 CFLAGS		=	-Wall -Wextra -O3 -std=c99 ${DEBUG}
-LIBS		=	-lrt -pthread -lpigpio -lst7789vw -lbcm2835
+LIBS		=	-lrt -pthread -lpigpio -lst7789vw -lbcm2835 -lbno055
 INC			= 	-I ./includes
 DEBUG		=	-g
 RM			=	rm -f
