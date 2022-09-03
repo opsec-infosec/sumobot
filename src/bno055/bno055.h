@@ -346,7 +346,7 @@ int setMode(t_bno055 *bno055, opmode_t newmode);
 int getMode(t_bno055 *bno055);
 int bnoReset(t_bno055 *bno055);
 int getEul(t_bno055  *bno055);
-//int getQua(t_bno055 *bno055);
+int getQua(t_bno055 *bno055);
 int initGyro(t_bno055 *bno055);
 void freeGyro(t_bno055 *bno055);
 
