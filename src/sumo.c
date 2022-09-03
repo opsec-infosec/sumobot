@@ -111,6 +111,7 @@ int main(void) {
     t_motor *motor = NULL;
 	t_bno055 bno055;
 
+	(void)bno055;
  	// if (gpioInitialise() < 0) {
     //     perror("pigpio failed initialisation!\n");
     //     syslog(LOG_DEBUG, "ERROR: gpioPWMInitialise (%s,%d)", __FILE__, __LINE__);
