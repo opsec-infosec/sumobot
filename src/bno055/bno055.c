@@ -115,7 +115,7 @@ int getMode(t_bno055 *bno055) {
 	 	return -1;
 	}
 	bno055->mode = data & 0x0F;
-   	return(data & 0x0F);  // only return the lowest 4 bits
+   	return data & 0x0F;  // only return the lowest 4 bits
 }
 
 //
