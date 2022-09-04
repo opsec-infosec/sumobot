@@ -8,6 +8,8 @@
 #include <syslog.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <pthread.h>
+#include <math.h>
 
 #define	DEBUG
 
@@ -174,22 +176,22 @@
  * BNO055 versions, status data and other infos struct          *
  * ------------------------------------------------------------ */
 typedef struct s_bnoinf{
-   char chip_id;  // reg 0x00 default 0xA0
-   char acc_id;   // reg 0x01 default 0xFB
-   char mag_id;   // reg 0x02 default 0x32
-   char gyr_id;   // reg 0x03 default 0x0F
-   char sw_lsb;   // reg 0x04 default 0x08
-   char sw_msb;   // reg 0x05 default 0x03
-   char bl_rev;   // reg 0x06 no default
-   char opr_mode; // reg 0x3D default 0x1C
-   char pwr_mode; // reg 0x3E default 0x00
-   char axr_conf; // reg 0x41 default 0x24
-   char axr_sign; // reg 0x42 default 0x00
-   char sys_stat; // reg 0x39 system error status, range 0-6
-   char selftest; // reg 0x36 self test result
-   char sys_err;  // reg 0x3a system error code, 0=OK
-   char unitsel;  // reg 0x3b SI units definition
-   char temp_val; // reg 0x34 sensor temperature value
+	char chip_id;  // reg 0x00 default 0xA0
+	char acc_id;   // reg 0x01 default 0xFB
+	char mag_id;   // reg 0x02 default 0x32
+	char gyr_id;   // reg 0x03 default 0x0F
+	char sw_lsb;   // reg 0x04 default 0x08
+	char sw_msb;   // reg 0x05 default 0x03
+	char bl_rev;   // reg 0x06 no default
+	char opr_mode; // reg 0x3D default 0x1C
+	char pwr_mode; // reg 0x3E default 0x00
+	char axr_conf; // reg 0x41 default 0x24
+	char axr_sign; // reg 0x42 default 0x00
+	char sys_stat; // reg 0x39 system error status, range 0-6
+	char selftest; // reg 0x36 self test result
+	char sys_err;  // reg 0x3a system error code, 0=OK
+	char unitsel;  // reg 0x3b SI units definition
+	char temp_val; // reg 0x34 sensor temperature value
 }t_bnoinf;
 
 /* ------------------------------------------------------------ *
@@ -200,21 +202,21 @@ typedef struct s_bnoinf{
  * is stored on the sensor in two bytes with max value of 32768.*
  * ------------------------------------------------------------ */
 typedef struct s_bnocal{
-   char scal_st;  // reg 0x35 system calibration state, range 0-3
-   char gcal_st;  // gyroscope calibration state, range 0-3
-   char acal_st;  // accelerometer calibration state, range 0-3
-   char mcal_st;  // magnetometer calibration state, range 0-3
-   int  aoff_x;   // accelerometer offset, X-axis
-   int  aoff_y;   // accelerometer offset, Y-axis
-   int  aoff_z;   // accelerometer offset, Z-axis
-   int  moff_x;   // magnetometer offset, X-axis
-   int  moff_y;   // magnetometer offset, Y-axis
-   int  moff_z;   // magnetometer offset, Z-axis
-   int  goff_x;   // gyroscope offset, X-axis
-   int  goff_y;   // gyroscope offset, Y-axis
-   int  goff_z;   // gyroscope offset, Z-axis
-   int acc_rad;   // accelerometer radius
-   int mag_rad;   // magnetometer radius
+	char scal_st;  // reg 0x35 system calibration state, range 0-3
+	char gcal_st;  // gyroscope calibration state, range 0-3
+	char acal_st;  // accelerometer calibration state, range 0-3
+	char mcal_st;  // magnetometer calibration state, range 0-3
+	int  aoff_x;   // accelerometer offset, X-axis
+	int  aoff_y;   // accelerometer offset, Y-axis
+	int  aoff_z;   // accelerometer offset, Z-axis
+	int  moff_x;   // magnetometer offset, X-axis
+	int  moff_y;   // magnetometer offset, Y-axis
+	int  moff_z;   // magnetometer offset, Z-axis
+	int  goff_x;   // gyroscope offset, X-axis
+	int  goff_y;   // gyroscope offset, Y-axis
+	int  goff_z;   // gyroscope offset, Z-axis
+	int acc_rad;   // accelerometer radius
+	int mag_rad;   // magnetometer radius
 }t_bnocal;
 
 /* ------------------------------------------------------------ *
@@ -222,96 +224,108 @@ typedef struct s_bnocal{
  * on the sensor component type that was requested for reading. *
  * ------------------------------------------------------------ */
 typedef struct s_bnoacc{
-   double adata_x;   // accelerometer data, X-axis
-   double adata_y;   // accelerometer data, Y-axis
-   double adata_z;   // accelerometer data, Z-axis
+	double adata_x;   // accelerometer data, X-axis
+	double adata_y;   // accelerometer data, Y-axis
+	double adata_z;   // accelerometer data, Z-axis
 }t_bnoacc;
 
 typedef struct s_bnomag{
-   double mdata_x;   // magnetometer data, X-axis
-   double mdata_y;   // magnetometer data, Y-axis
-   double mdata_z;   // magnetometer data, Z-axis
+	double mdata_x;   // magnetometer data, X-axis
+	double mdata_y;   // magnetometer data, Y-axis
+	double mdata_z;   // magnetometer data, Z-axis
 }t_bnomag;
 
 typedef struct s_bnogyr{
-   double gdata_x;   // gyroscope data, X-axis
-   double gdata_y;   // gyroscope data, Y-axis
-   double gdata_z;   // gyroscope data, Z-axis
+	double gdata_x;   // gyroscope data, X-axis
+	double gdata_y;   // gyroscope data, Y-axis
+	double gdata_z;   // gyroscope data, Z-axis
 }t_bnogyr;
 
 typedef struct s_bnoeul{
-   double eul_head;  // Euler heading data
-   double eul_roll;  // Euler roll data
-   double eul_pitc;  // Euler picth data
+	double eulHead;  // Euler heading data
+	double eulRoll;  // Euler roll data
+	double eulPitch;  // Euler picth data
+	pthread_mutex_t *m_bnoeul;	// Euler Multex Array
+	pthread_t pth_bnoeul;	// Euler Thread
 }t_bnoeul;
 
+typedef struct s_caleul {
+	double head;
+	double roll;
+	double pitch;
+	pthread_mutex_t m_caleul;
+}t_caleul;
 typedef struct s_bnoqua{
-   double quater_w;  // Quaternation data W
-   double quater_x;  // Quaternation data X
-   double quater_y;  // Quaternation data Y
-   double quater_z;  // Quaternation data Z
+	double quaterW;  // Quaternation data W
+	double quaterX;  // Quaternation data X
+	double quaterY;  // Quaternation data Y
+	double quaterZ;  // Quaternation data Z
+	pthread_mutex_t *m_bnoqua;	// Quaternation Mutex Array
+	pthread_t pth_bnoqua;	// Quaternation Thread
 }t_bnoqua;
 
 typedef struct s_bnogra{
-   double gravityx;  // Gravity Vector X
-   double gravityy;  // Gravity Vector Y
-   double gravityz;  // Gravity Vector Z
+	double gravityX;  // Gravity Vector X
+	double gravityY;  // Gravity Vector Y
+	double gravityZ;  // Gravity Vector Z
+	pthread_mutex_t *m_bnogra;
+	pthread_t pth_bnogra;
 }t_bnogra;
 
 typedef struct s_bnolin{
-   double linacc_x;  // Linear Acceleration X
-   double linacc_y;  // Linear Acceleration Y
-   double linacc_z;  // Linear Acceleration Z
+	double linacc_x;  // Linear Acceleration X
+	double linacc_y;  // Linear Acceleration Y
+	double linacc_z;  // Linear Acceleration Z
 }t_bnolin;
 
 /* ------------------------------------------------------------ *
  * BNO055 accelerometer gyroscope magnetometer config structs   *
  * ------------------------------------------------------------ */
 typedef struct s_bnoaconf{
-   int pwrmode;      // p-1 reg 0x08 accelerometer power mode
-   int bandwth;      // p-1 reg 0x08 accelerometer bandwidth
-   int range;        // p-1 reg 0x08 accelerometer rate
-   int slpmode;      // p-1 reg 0x0C accelerometer sleep mode
-   int slpdur;       // p-1 reg 0x0C accelerometer sleep duration
+	int pwrmode;      // p-1 reg 0x08 accelerometer power mode
+	int bandwth;      // p-1 reg 0x08 accelerometer bandwidth
+	int range;        // p-1 reg 0x08 accelerometer rate
+	int slpmode;      // p-1 reg 0x0C accelerometer sleep mode
+	int slpdur;       // p-1 reg 0x0C accelerometer sleep duration
 }t_bnoaconf;
 
 typedef struct s_bnomconf{
-   int pwrmode;      // p-1 reg 0x09 magnetometer power mode
-   int oprmode;      // p-1 reg 0x09 magnetometer operation
-   int outrate;      // p-1 reg 0x09 magnetometer output rate
+	int pwrmode;      // p-1 reg 0x09 magnetometer power mode
+	int oprmode;      // p-1 reg 0x09 magnetometer operation
+	int outrate;      // p-1 reg 0x09 magnetometer output rate
 }t_bnomconf;
 
 typedef struct s_bnogconf{
-   int pwrmode;      // p-1 reg 0x0B gyroscope power mode
-   int bandwth;      // p-1 reg 0x0A gyroscope bandwidth
-   int range;        // p-1 reg 0x0A gyroscope range
-   int slpdur;       // p-1 reg 0x0D gyroscope sleep duration
-   int aslpdur;      // p-1 reg 0x0D gyroscope auto sleep dur
+	int pwrmode;      // p-1 reg 0x0B gyroscope power mode
+	int bandwth;      // p-1 reg 0x0A gyroscope bandwidth
+	int range;        // p-1 reg 0x0A gyroscope range
+	int slpdur;       // p-1 reg 0x0D gyroscope sleep duration
+	int aslpdur;      // p-1 reg 0x0D gyroscope auto sleep dur
 }t_bnogconf;
 
 /* ------------------------------------------------------------ *
  * Operations and power mode, name to value translation         *
  * ------------------------------------------------------------ */
 typedef enum {
-   config   = 0x00,
-   acconly  = 0x01,
-   magonly  = 0x02,
-   gyronly  = 0x03,
-   accmag   = 0x04,
-   accgyro  = 0x05,
-   maggyro  = 0x06,
-   amg      = 0x07,
-   imu      = 0x08,
-   compass  = 0x09,
-   m4g      = 0x0A,
-   ndof     = 0x0B,
-   ndof_fmc = 0x0C
+	config   = 0x00,
+	acconly  = 0x01,
+	magonly  = 0x02,
+	gyronly  = 0x03,
+	accmag   = 0x04,
+	accgyro  = 0x05,
+	maggyro  = 0x06,
+	amg      = 0x07,
+	imu      = 0x08,
+	compass  = 0x09,
+	m4g      = 0x0A,
+	ndof     = 0x0B,
+	ndof_fmc = 0x0C
 } opmode_t;
 
 typedef enum {
-   normal  = 0x00,
-   low     = 0x01,
-   suspend = 0x02
+	normal  = 0x00,
+	low     = 0x01,
+	suspend = 0x02
 } power_t;
 
 typedef enum {
@@ -322,9 +336,10 @@ typedef enum {
 } t_calstate;
 
 typedef struct s_bno055 {
-	unsigned		fd;
+	int				fd;
 	char			*i2cbus;
 	int				addr;
+	pthread_mutex_t	m_locki2cBus;
 	opmode_t		mode;
 	//t_bnoinf		*bnoinf;
 	//t_bnomconf 	*bnomconf;
@@ -335,9 +350,10 @@ typedef struct s_bno055 {
 	//t_bnomag		*bnomag;
 	//t_bnomconf	*bnomconf;
 	//t_bnolin		*bnolin;
-	//t_bnogra		*bnogra;
+	t_bnogra		*bnogra;
 	t_bnoeul		*bnoeul;
 	t_bnoqua		*bnoqua;
+	t_caleul		*caleul;
 	//t_bnocal		*bnocal;
 }t_bno055;
 
@@ -347,7 +363,10 @@ int getMode(t_bno055 *bno055);
 int bnoReset(t_bno055 *bno055);
 int getEul(t_bno055  *bno055);
 int getQua(t_bno055 *bno055);
+void getCalEul(t_bno055 *bno055);
 int initGyro(t_bno055 *bno055);
-void freeGyro(t_bno055 *bno055);
+int startGyro(t_bno055 *bno055);
+void stopGyro(t_bno055 *bno055);
+
 
 #endif

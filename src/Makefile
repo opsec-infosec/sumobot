@@ -14,12 +14,13 @@ NAME		=	sumo.out
 
 SSRCS		=	./sumo.c ./sumoInit.c ./motors.c ./navigation.c ./sensors.c \
 				./sequence.c ./piPinSetup.c ./display.c ./watchdog.c \
+				./gyro.c
 
 SOBJS		=	${SSRCS:.c=.o}
 
 CC			=	gcc
 CFLAGS		=	-Wall -Wextra -O3 -std=c99 ${DEBUG}
-LIBS		=	-lrt -pthread -lpigpio -lst7789vw -lbcm2835 -lbno055
+LIBS		=	-lrt -pthread -lpigpio -lst7789vw -lbcm2835 -lbno055 -lm
 INC			= 	-I ./includes
 DEBUG		=	-g3
 RM			=	rm -f

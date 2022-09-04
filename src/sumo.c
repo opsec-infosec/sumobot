@@ -1,5 +1,6 @@
 #include "./includes/sequence.h"
 #include "./includes/display.h"
+#include "./includes/gyro.h"
 #include "./includes/sumo.h"
 //#include "./includes/watchdog.h"
 
@@ -112,18 +113,25 @@ int main(void) {
 	t_bno055 bno055;
 
 	(void)bno055;
- 	// if (gpioInitialise() < 0) {
-    //     perror("pigpio failed initialisation!\n");
-    //     syslog(LOG_DEBUG, "ERROR: gpioPWMInitialise (%s,%d)", __FILE__, __LINE__);
-    //     return EXIT_FAILURE;
-    // }
+ 	if (gpioInitialise() < 0) {
+        perror("pigpio failed initialisation!\n");
+        syslog(LOG_DEBUG, "ERROR: gpioPWMInitialise (%s,%d)", __FILE__, __LINE__);
+        return EXIT_FAILURE;
+    }
 
-	// initGyro(&bno055);
-
-	// while (1) {
-	// 	getEul(&bno055);
-	// 	gpioDelay(10);
-	// }
+	// TESTING
+	initDisplay();
+	midStringDisplay("GYR", 5, BLUE, WHITE);
+	initGyro(&bno055);
+	startGyro(&bno055);
+	midStringDisplay("RUN", 4, DARK_GREEN, WHITE);
+	while (1) {
+		printf("HEAD: %f ", getEulHead(&bno055));
+		printf("ROLL: %f ", getEulRoll(&bno055));
+		printf("PITCH: %f\n", getEulPitch(&bno055));
+	 	gpioDelay(20000);
+	}
+	// END TESTING
 
     #ifdef WDT
         initWDT();

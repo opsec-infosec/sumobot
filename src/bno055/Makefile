@@ -14,7 +14,7 @@ RANLIB	=	ranlib
 RM		=	rm -f
 
 ${NAME}:	${OBJS}
-			${CC} ${CFLAGS} ${LDFLAGS} -c ${SRCS}
+			${CC} ${CFLAGS} ${LDFLAGS} -c ${SRCS} -lm
 			${LIBC} ${NAME} ${OBJS}
 
 all:		${NAME}

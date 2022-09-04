@@ -9,7 +9,6 @@
 #include <unistd.h>
 #include <syslog.h>
 #include <pigpio.h>
-#include <bno055.h>
 
 #define VERSION "SUMO BOT v1.0a\n"
 
